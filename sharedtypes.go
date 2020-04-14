@@ -82,7 +82,7 @@ func ParseClass(s string) Class {
 		return Mage
 	case "warlock":
 		return Warlock
-	case "Druid":
+	case "druid":
 		return Druid
 	default:
 		return UnknownClass

@@ -207,7 +207,7 @@ type Parse struct {
 	Gear           []Gear  `json:"gear"`
 	IlvlKeyOrPatch int     `json:"ilvlKeyOrPatch"`
 	OutOf          int     `json:"outOf"`
-	Percentile     int     `json:"percentile"`
+	Percentile     float64 `json:"percentile"`
 	Rank           int     `json:"rank"`
 	ReportID       string  `json:"reportID"`
 	Server         string  `json:"server"`

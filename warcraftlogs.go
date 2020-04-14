@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"path"
 	"sort"
 	"time"
@@ -29,8 +30,12 @@ func NewClient(apiKey string) *Client {
 }
 
 func (c *Client) doGet(endpoint string, v interface{}) error {
-	url := "https://" + path.Join(APIDomain, endpoint) + "?api_key=" + c.APIKey
-	response, err := c.httpClient.Get(url)
+	urlO := "https://" + path.Join(APIDomain, endpoint)
+	urlP, _ := url.Parse(urlO)
+	q := urlP.Query()
+	q.Set("api_key", c.APIKey)
+	urlP.RawQuery = q.Encode()
+	response, err := c.httpClient.Get(urlP.String())
 	if err != nil {
 		return err
 	}
@@ -48,10 +53,28 @@ func (c *Client) GetParses(query ParsesQuery) (ParsesResponse, error) {
 	var result ParsesResponse
 	endpoint := fmt.Sprintf("/v1/parses/character/%s/%s/%s", query.CharacterName, query.Server, query.Region)
 	if err := c.doGet(endpoint, &result); err != nil {
+		fmt.Println("err: ", err)
 		return nil, err
 	}
 
 	sort.Sort(sort.Reverse(ByDate(result)))
+
+	p := result[0]
+	if p.Spec == "Healer" {
+		return c.GetHealingParses(query)
+	}
+	return result, nil
+}
+
+func (c *Client) GetHealingParses(query ParsesQuery) (ParsesResponse, error) {
+	var result ParsesResponse
+	endpoint := fmt.Sprintf("/v1/parses/character/%s/%s/%s?metric=hps", query.CharacterName, query.Server, query.Region)
+	if err := c.doGet(endpoint, &result); err != nil {
+		return nil, err
+	}
+
+	sort.Sort(sort.Reverse(ByDate(result)))
+
 	return result, nil
 }
 
